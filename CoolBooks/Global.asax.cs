@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
@@ -19,6 +17,5 @@ namespace CoolBooks
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
-       
     }
 }
