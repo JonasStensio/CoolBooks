@@ -1,140 +1,108 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
 using CoolBooks.Models;
+using Newtonsoft.Json;
 
 namespace CoolBooks.Controllers
 {
     public class BooksController : Controller
     {
-        private CoolBooksEntities db = new CoolBooksEntities();
-
         // GET: Books
+
         public ActionResult Index()
+            
         {
-            var books = db.Books.Include(b => b.AspNetUsers).Include(b => b.Authors).Include(b => b.Genres);
-            return View(books.ToList());
+            //ViewBag.GenderId = new SelectList(Genres, "GenderId", "Description");
+            return View();
         }
 
         // GET: Books/Details/5
-        public ActionResult Details(int? id)
+        public ActionResult Details(int id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Books books = db.Books.Find(id);
-            if (books == null)
-            {
-                return HttpNotFound();
-            }
-            return View(books);
+            return View();
         }
 
         // GET: Books/Create
         public ActionResult Create()
         {
-            ViewBag.UserId = new SelectList(db.AspNetUsers, "Id", "Email");
-            ViewBag.AuthorId = new SelectList(db.Authors, "Id", "FirstName");
-            ViewBag.GenreId = new SelectList(db.Genres, "Id", "Name");
             return View();
         }
 
         // POST: Books/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,UserId,AuthorId,GenreId,Title,AlternativeTitle,Part,Description,ISBN,PublishDate,ImagePath,Created,IsDeleted")] Books books)
+        public ActionResult Create(FormCollection collection)
         {
-            if (ModelState.IsValid)
+            try
             {
-                db.Books.Add(books);
-                db.SaveChanges();
+                // TODO: Add insert logic here
+
                 return RedirectToAction("Index");
             }
-
-            ViewBag.UserId = new SelectList(db.AspNetUsers, "Id", "Email", books.UserId);
-            ViewBag.AuthorId = new SelectList(db.Authors, "Id", "FirstName", books.AuthorId);
-            ViewBag.GenreId = new SelectList(db.Genres, "Id", "Name", books.GenreId);
-            return View(books);
+            catch
+            {
+                return View();
+            }
         }
 
         // GET: Books/Edit/5
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Books books = db.Books.Find(id);
-            if (books == null)
-            {
-                return HttpNotFound();
-            }
-            ViewBag.UserId = new SelectList(db.AspNetUsers, "Id", "Email", books.UserId);
-            ViewBag.AuthorId = new SelectList(db.Authors, "Id", "FirstName", books.AuthorId);
-            ViewBag.GenreId = new SelectList(db.Genres, "Id", "Name", books.GenreId);
-            return View(books);
+            return View();
         }
 
         // POST: Books/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,UserId,AuthorId,GenreId,Title,AlternativeTitle,Part,Description,ISBN,PublishDate,ImagePath,Created,IsDeleted")] Books books)
+        public ActionResult Edit(int id, FormCollection collection)
         {
-            if (ModelState.IsValid)
+            try
             {
-                db.Entry(books).State = EntityState.Modified;
-                db.SaveChanges();
+                // TODO: Add update logic here
+
                 return RedirectToAction("Index");
             }
-            ViewBag.UserId = new SelectList(db.AspNetUsers, "Id", "Email", books.UserId);
-            ViewBag.AuthorId = new SelectList(db.Authors, "Id", "FirstName", books.AuthorId);
-            ViewBag.GenreId = new SelectList(db.Genres, "Id", "Name", books.GenreId);
-            return View(books);
+            catch
+            {
+                return View();
+            }
         }
 
         // GET: Books/Delete/5
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(int id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Books books = db.Books.Find(id);
-            if (books == null)
-            {
-                return HttpNotFound();
-            }
-            return View(books);
+            return View();
         }
 
         // POST: Books/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        [HttpPost]
+        public ActionResult Delete(int id, FormCollection collection)
         {
-            Books books = db.Books.Find(id);
-            db.Books.Remove(books);
-            db.SaveChanges();
-            return RedirectToAction("Index");
+            try
+            {
+                // TODO: Add delete logic here
+
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return View();
+            }
         }
 
-        protected override void Dispose(bool disposing)
+        public static string SearchBook(string isbn)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("http://localhost:49905");
+            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            HttpResponseMessage response = client.GetAsync("https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn).Result;
+
+            string jsonData = response.Content.ReadAsStringAsync().Result;
+
+            Books book = JsonConvert.DeserializeObject<Books>(jsonData);
+            return jsonData; // return book;
         }
     }
 }
